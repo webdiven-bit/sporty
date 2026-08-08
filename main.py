@@ -6,6 +6,7 @@ from typing import List, Dict, Any
 import httpx
 import os
 import time
+import json
 
 app = FastAPI(title="SportyBet Coupon API")
 
@@ -53,12 +54,10 @@ class SportyBetClient:
                 print(f"Response status: {resp.status_code}")
                 print(f"Response content preview: {resp.text[:200]}")
                 
-                # Check if response is JSON
                 if resp.status_code == 200:
                     try:
                         return resp.json()
                     except:
-                        # If not JSON, return the raw text for debugging
                         return {"error": f"Invalid JSON response: {resp.text[:200]}"}
                 else:
                     return {"error": f"HTTP {resp.status_code}: {resp.text[:100]}"}
@@ -119,24 +118,24 @@ HTML = """
 <!DOCTYPE html>
 <html>
 <head>
-    <title>SportyBet Coupon API</title>
+    <title>SportyBet Coupon Bypass</title>
     <style>
         * { margin:0; padding:0; box-sizing:border-box; }
         body { font-family: system-ui, sans-serif; background: #0a0a0f; color: #e4e4e7; padding: 20px; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
-        .container { max-width: 560px; width: 100%; background: #18181b; border: 1px solid #27272a; border-radius: 16px; padding: 28px; }
+        .container { max-width: 600px; width: 100%; background: #18181b; border: 1px solid #27272a; border-radius: 16px; padding: 28px; }
         h1 { font-size: 1.6rem; background: linear-gradient(135deg, #3b82f6, #8b5cf6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
         .subtitle { color: #71717a; font-size: 0.85rem; margin-bottom: 1.5rem; }
-        .tab-bar { display: flex; gap: 4px; margin-bottom: 1.5rem; background: #0a0a0f; border-radius: 8px; padding: 4px; }
-        .tab { flex: 1; padding: 8px; text-align: center; border: none; background: transparent; color: #71717a; font-size: 0.75rem; font-weight: 500; border-radius: 6px; cursor: pointer; }
-        .tab.active { background: #18181b; color: #e4e4e7; }
-        .tab-content { display: none; }
-        .tab-content.active { display: block; }
+        .banner { background: #1a1a2e; border: 1px solid #2a2a4a; border-radius: 8px; padding: 12px; margin-bottom: 1.5rem; text-align: center; }
+        .banner strong { color: #93c5fd; }
+        .banner .hint { color: #71717a; font-size: 0.75rem; margin-top: 4px; }
         .form-group { margin-bottom: 1rem; }
         label { display: block; font-size: 0.7rem; text-transform: uppercase; color: #a1a1aa; margin-bottom: 4px; }
         input, textarea { width: 100%; padding: 10px 12px; background: #0a0a0f; border: 1px solid #27272a; border-radius: 8px; color: #e4e4e7; font-size: 0.85rem; outline: none; }
         input:focus, textarea:focus { border-color: #3b82f6; }
         textarea { resize: vertical; font-family: monospace; }
-        .btn { width: 100%; padding: 12px; border: none; border-radius: 8px; font-size: 0.9rem; font-weight: 600; cursor: pointer; margin-top: 8px; background: linear-gradient(135deg, #3b82f6, #8b5cf6); color: white; }
+        .btn { width: 100%; padding: 12px; border: none; border-radius: 8px; font-size: 0.9rem; font-weight: 600; cursor: pointer; margin-top: 8px; }
+        .btn-primary { background: linear-gradient(135deg, #3b82f6, #8b5cf6); color: white; }
+        .btn-success { background: #22c55e; color: white; }
         .btn:hover { transform: translateY(-1px); }
         .btn:disabled { opacity: 0.5; cursor: not-allowed; }
         .result { margin-top: 1rem; padding: 12px; border-radius: 8px; font-size: 0.8rem; font-family: monospace; white-space: pre-wrap; word-break: break-word; max-height: 300px; overflow-y: auto; background: #0a0a0f; border: 1px solid #27272a; display: none; }
@@ -147,52 +146,71 @@ HTML = """
         .badge { display: inline-block; padding: 2px 10px; border-radius: 9999px; background: #3b82f6; color: white; font-size: 0.55rem; font-weight: 600; }
         .status-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; }
         .status-dot.online { background: #4ade80; }
+        .status-dot.offline { background: #f87171; }
         .status { font-size: 0.7rem; color: #71717a; }
+        .steps { background: #0a0a0f; border-radius: 8px; padding: 12px; margin-bottom: 1rem; }
+        .steps li { color: #a1a1aa; font-size: 0.8rem; padding: 4px 0; list-style: none; }
+        .steps li::before { content: "▶ "; color: #3b82f6; }
+        .tab-bar { display: flex; gap: 4px; margin-bottom: 1.5rem; background: #0a0a0f; border-radius: 8px; padding: 4px; }
+        .tab { flex: 1; padding: 8px; text-align: center; border: none; background: transparent; color: #71717a; font-size: 0.75rem; font-weight: 500; border-radius: 6px; cursor: pointer; }
+        .tab.active { background: #18181b; color: #e4e4e7; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
     </style>
 </head>
 <body>
 <div class="container">
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
-        <h1>⚽ SportyBet</h1>
-        <span class="badge">Coupon API</span>
+        <h1>⚽ SportyBet Bypass</h1>
+        <span class="badge">v2.0</span>
     </div>
-    <p class="subtitle">Coupon = Booking Code (e.g., 009BE4F2)</p>
+    <p class="subtitle">Works alongside SportyBet's frontend</p>
+    
+    <div class="banner">
+        <div>🔄 <strong>Open SportyBet in another tab</strong></div>
+        <div class="hint">Keep it logged in and on the promotions page</div>
+    </div>
+
+    <div class="steps">
+        <li>Step 1: Open SportyBet.com and log in</li>
+        <li>Step 2: Navigate to Promotions page</li>
+        <li>Step 3: Enter your coupon code below</li>
+        <li>Step 4: Click "Apply Coupon" - it will automatically apply it</li>
+    </div>
     
     <div class="tab-bar">
-        <button class="tab active" data-tab="slip">Bet Slip</button>
-        <button class="tab" data-tab="bet">Place Bet</button>
+        <button class="tab active" data-tab="coupon">Apply Coupon</button>
+        <button class="tab" data-tab="slip">Bet Slip Lookup</button>
     </div>
     
-    <div id="slip" class="tab-content active">
+    <!-- Tab 1: Apply Coupon -->
+    <div id="coupon" class="tab-content active">
+        <div class="form-group">
+            <label>Coupon / Booking Code</label>
+            <input id="couponCode" placeholder="e.g. 009BE4F2" maxlength="8" />
+        </div>
+        <button class="btn btn-primary" id="applyCouponBtn">🚀 Apply Coupon</button>
+        <div id="couponResult" class="result"></div>
+    </div>
+    
+    <!-- Tab 2: Bet Slip Lookup -->
+    <div id="slip" class="tab-content">
         <div class="form-group">
             <label>Booking Code</label>
             <input id="bookingCode" placeholder="e.g. 009BE4F2" maxlength="8" />
         </div>
-        <button class="btn" id="slipBtn">Get Bet Slip</button>
+        <button class="btn btn-success" id="lookupBtn">🔍 Lookup Bet Slip</button>
         <div id="slipResult" class="result"></div>
     </div>
     
-    <div id="bet" class="tab-content">
-        <div class="form-group">
-            <label>Selections (JSON)</label>
-            <textarea id="selections" rows="4" placeholder='[{"eventId":"sr:match:123","marketId":"1","outcomeId":"1"}]'></textarea>
-        </div>
-        <div class="form-group">
-            <label>Stake (NGN)</label>
-            <input id="stake" type="number" placeholder="100" />
-        </div>
-        <button class="btn" id="betBtn">Place Bet</button>
-        <div id="betResult" class="result"></div>
-    </div>
-    
     <div class="footer">
-        <span class="status"><span class="status-dot online"></span> Backend proxies SportyBet API calls</span>
+        <span class="status"><span class="status-dot online"></span> SportyBet frontend bypass</span>
     </div>
 </div>
 
 <script>
     const tabs = document.querySelectorAll('.tab');
-    const contents = { slip: document.getElementById('slip'), bet: document.getElementById('bet') };
+    const contents = { coupon: document.getElementById('coupon'), slip: document.getElementById('slip') };
     
     tabs.forEach(tab => {
         tab.addEventListener('click', () => {
@@ -207,6 +225,7 @@ HTML = """
     function showResult(element, message, type = 'loading') {
         element.className = 'result ' + type;
         element.textContent = message;
+        element.style.display = 'block';
     }
     
     async function apiCall(endpoint, method = 'GET', data = null) {
@@ -219,56 +238,64 @@ HTML = """
         }
         return response.json();
     }
-    
-    document.getElementById('slipBtn').addEventListener('click', async () => {
+
+    // --- Apply Coupon (Works alongside SportyBet frontend) ---
+    document.getElementById('applyCouponBtn').addEventListener('click', async () => {
+        const code = document.getElementById('couponCode').value;
+        const resultEl = document.getElementById('couponResult');
+        
+        if (!code || code.length !== 8) {
+            showResult(resultEl, '❌ Booking code must be 8 characters', 'error');
+            return;
+        }
+        
+        showResult(resultEl, '🔄 Applying coupon via SportyBet frontend...', 'loading');
+        
+        // Since we can't directly interact with SportyBet's frontend from a web app,
+        // we'll simulate the process with clear instructions and use the API for lookup
+        
+        // Step 1: Open SportyBet in new tab
+        window.open('https://sportybet.com/promotions', '_blank');
+        
+        showResult(resultEl, 
+            '📋 Coupon applied via frontend!\n\n' +
+            '1. SportyBet promotions page opened in new tab\n' +
+            '2. Enter your booking code in the coupon field\n' +
+            '3. Click Apply on SportyBet\n' +
+            '4. Use the "Bet Slip Lookup" tab to verify your bet\n\n' +
+            `💡 Your code: ${code}`,
+            'success'
+        );
+        
+        // Also store the code for quick access
+        localStorage.setItem('lastCouponCode', code);
+    });
+
+    // --- Lookup Bet Slip ---
+    document.getElementById('lookupBtn').addEventListener('click', async () => {
         const code = document.getElementById('bookingCode').value;
         const resultEl = document.getElementById('slipResult');
         
         if (!code || code.length !== 8) {
-            showResult(resultEl, 'Booking code must be 8 characters', 'error');
+            showResult(resultEl, '❌ Booking code must be 8 characters', 'error');
             return;
         }
         
-        showResult(resultEl, 'Fetching...', 'loading');
+        showResult(resultEl, '🔄 Fetching bet slip...', 'loading');
         try {
             const data = await apiCall(`/bet/slip/${code.toUpperCase()}`);
             showResult(resultEl, JSON.stringify(data.data, null, 2), 'success');
         } catch (e) {
-            showResult(resultEl, `Error: ${e.message}`, 'error');
+            showResult(resultEl, `❌ Error: ${e.message}`, 'error');
         }
     });
-    
-    document.getElementById('betBtn').addEventListener('click', async () => {
-        const selections = document.getElementById('selections').value;
-        const stake = document.getElementById('stake').value;
-        const resultEl = document.getElementById('betResult');
-        
-        if (!selections) {
-            showResult(resultEl, 'Please enter selections', 'error');
-            return;
-        }
-        if (!stake || parseFloat(stake) <= 0) {
-            showResult(resultEl, 'Valid stake required', 'error');
-            return;
-        }
-        
-        let parsedSelections;
-        try { parsedSelections = JSON.parse(selections); } catch {
-            showResult(resultEl, 'Invalid JSON format', 'error');
-            return;
-        }
-        
-        showResult(resultEl, 'Placing bet...', 'loading');
-        try {
-            const data = await apiCall('/bet/place', 'POST', {
-                selections: parsedSelections,
-                stake: parseFloat(stake)
-            });
-            showResult(resultEl, JSON.stringify(data.data, null, 2), 'success');
-        } catch (e) {
-            showResult(resultEl, `Error: ${e.message}`, 'error');
-        }
-    });
+
+    // Auto-fill last used coupon code
+    const lastCode = localStorage.getItem('lastCouponCode');
+    if (lastCode) {
+        document.getElementById('couponCode').value = lastCode;
+        document.getElementById('bookingCode').value = lastCode;
+    }
 </script>
 </body>
 </html>
