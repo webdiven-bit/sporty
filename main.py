@@ -28,22 +28,40 @@ class SportyBetClient:
     def __init__(self):
         self.base = SPORTYBET_BASE
         self.headers = {
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
-            "Accept": "application/json",
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+            "Accept": "application/json, text/plain, */*",
+            "Accept-Language": "en-US,en;q=0.9",
+            "Accept-Encoding": "gzip, deflate, br",
             "Content-Type": "application/json",
             "Origin": "https://sportybet.com",
             "Referer": "https://sportybet.com/",
+            "Sec-Ch-Ua": '"Not_A Brand";v="8", "Chromium";v="120", "Google Chrome";v="120"',
+            "Sec-Ch-Ua-Mobile": "?0",
+            "Sec-Ch-Ua-Platform": '"Windows"',
+            "Sec-Fetch-Dest": "empty",
+            "Sec-Fetch-Mode": "cors",
+            "Sec-Fetch-Site": "same-origin",
+            "Connection": "keep-alive",
         }
     
     async def _request(self, method: str, path: str, data: dict = None) -> dict:
         async with httpx.AsyncClient(headers=self.headers, timeout=30.0, follow_redirects=True) as client:
             try:
                 url = f"{self.base}{path}"
+                print(f"Making request to: {url}")
                 resp = await client.request(method, url, json=data)
-                try:
-                    return resp.json()
-                except:
-                    return {"error": "Invalid JSON response"}
+                print(f"Response status: {resp.status_code}")
+                print(f"Response content preview: {resp.text[:200]}")
+                
+                # Check if response is JSON
+                if resp.status_code == 200:
+                    try:
+                        return resp.json()
+                    except:
+                        # If not JSON, return the raw text for debugging
+                        return {"error": f"Invalid JSON response: {resp.text[:200]}"}
+                else:
+                    return {"error": f"HTTP {resp.status_code}: {resp.text[:100]}"}
             except Exception as e:
                 return {"error": str(e)}
     
